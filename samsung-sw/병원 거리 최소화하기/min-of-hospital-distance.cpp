@@ -1,73 +1,60 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-#include <climits>
-
+#include <bits/stdc++.h>
 using namespace std;
 
-int n, m;
-int answer = INT_MAX;
+int n, m, answer = INT_MAX;
+vector<pair<int, int>> people, hospital;
+vector<int> selected; 
 
-vector<pair<int, int>> client;
-vector<pair<int, int>> hospital;
-vector<pair<int, int>> selected;
+void dfs(int start) {
+    // 병원 m개를 선택했다면 거리 계산
+    if (selected.size() == m) {
+        int sum = 0;
 
-void backTrack(int start)
-{
-    if (selected.size() == m)
-    {
-        int totalDist = 0;
+        // 각 사람마다 가장 가까운 병원 거리 계산
+        for (auto [x, y] : people) {
+            int dist = INT_MAX;
 
-        for (int i = 0; i < client.size(); i++)
-        {
-            int minDist = INT_MAX;
+            for (int idx : selected) {
+                auto [hx, hy] = hospital[idx];
 
-            for (int j = 0; j < selected.size(); j++)
-            {
-                int dist =
-                    abs(client[i].first - selected[j].first) +
-                    abs(client[i].second - selected[j].second);
-
-                minDist = min(minDist, dist);
+                // 맨해튼 거리 계산
+                dist = min(dist, abs(x - hx) + abs(y - hy));
             }
 
-            totalDist += minDist;
+            sum += dist;
         }
 
-        answer = min(answer, totalDist);
+        // 전체 병원 거리의 최솟값 갱신
+        answer = min(answer, sum);
         return;
     }
 
-    for (int i = start; i < hospital.size(); i++)
-    {
-        selected.push_back(hospital[i]);
-        backTrack(i + 1);
-        selected.pop_back();
+    // 병원 m개를 선택하는 조합 탐색
+    for (int i = start; i < hospital.size(); i++) {
+        selected.push_back(i); // 병원 선택
+        dfs(i + 1);           // 다음 병원 탐색
+        selected.pop_back();  // 선택 취소
     }
 }
 
-int main()
-{
+int main() {
+    ios::sync_with_stdio(0);
+    cin.tie(0);
     cin >> n >> m;
 
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            int value;
-            cin >> value;
+    // 사람(1)과 병원(2)의 좌표 저장
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            int x;
+            cin >> x;
 
-            if (value == 1)
-                client.push_back({ i, j });
-
-            else if (value == 2)
-                hospital.push_back({ i, j });
+            if (x == 1) people.push_back({i, j});
+            if (x == 2) hospital.push_back({i, j});
         }
     }
 
-    backTrack(0);
+    dfs(0); // 병원 조합 탐색 시작
 
     cout << answer;
-
     return 0;
 }
